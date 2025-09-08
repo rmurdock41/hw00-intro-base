@@ -16,14 +16,10 @@ jobs:
         with:
           node-version: "14.x"
 
-      - uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
-
       - name: Install and Build 🔧
         run: |
-          npm ci
+          rm -rf node_modules package-lock.json
+          npm install
           export NODE_ENV=production
           npm run build
           touch dist/.nojekyll
