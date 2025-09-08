@@ -1,8 +1,9 @@
-import {vec3} from 'gl-matrix';
+import {vec3, vec4} from 'gl-matrix';
 const Stats = require('stats-js');
 import * as DAT from 'dat.gui';
 import Icosphere from './geometry/Icosphere';
 import Square from './geometry/Square';
+import Cube from './geometry/Cube';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
@@ -13,10 +14,12 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
+  color: [255, 0, 0], // RGB red as default color
 };
 
 let icosphere: Icosphere;
 let square: Square;
+let cube: Cube;
 let prevTesselations: number = 5;
 
 function loadScene() {
@@ -24,6 +27,8 @@ function loadScene() {
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
+  cube = new Cube(vec3.fromValues(0, 0, 0));
+  cube.create();
 }
 
 function main() {
@@ -39,6 +44,7 @@ function main() {
   const gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
+  gui.addColor(controls, 'color').name('Cube Color');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -59,16 +65,18 @@ function main() {
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
   gl.enable(gl.DEPTH_TEST);
 
-  const lambert = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
+  const customShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/custom-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/custom-frag.glsl')),
   ]);
 
+  let startTime = Date.now();
   // This function will be called every frame
   function tick() {
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+    
     renderer.clear();
     if(controls.tesselations != prevTesselations)
     {
@@ -76,11 +84,26 @@ function main() {
       icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
       icosphere.create();
     }
-    renderer.render(camera, lambert, [
-      icosphere,
+    
+    // Convert color from 0-255 range to 0-1 range for shader
+    const normalizedColor = vec4.fromValues(
+      controls.color[0] / 255.0,
+      controls.color[1] / 255.0,
+      controls.color[2] / 255.0,
+      1.0
+    );
+    
+    // Pass time to shader for animation (convert milliseconds to seconds)
+    const currentTime = (Date.now() - startTime) * 0.001;
+    
+    renderer.render(camera, customShader, [
+      // icosphere,
       // square,
-    ]);
+      cube,
+    ], normalizedColor, currentTime);
     stats.end();
+
+
 
     // Tell the browser to call `tick` again whenever it renders a new frame
     requestAnimationFrame(tick);
