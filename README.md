@@ -1,10 +1,6 @@
 # HW 0: Intro to Javascript and WebGL
 
-
-
 ## Implementation Summary
-
-
 
 ### Features Completed
 
@@ -88,11 +84,9 @@ Integrated the custom shaders into the existing OpenGL rendering system with mat
 
 
 
+### Live Demo
 
-
-
-
-
+[Project 0: Getting Started | CIS 566](https://rmurdock41.github.io/hw00-intro-base/)
 
 
 
