@@ -1,16 +1,116 @@
 # HW 0: Intro to Javascript and WebGL
 
+
+
+## Implementation Summary
+
+
+
+### Features Completed
+
+#### Cube Geometry Implementation
+
+Created a `Cube` class inheriting from `Drawable` with 8 vertices and proper triangle indices to form a cube. Implemented the required `create()` function and integrated it into the rendering pipeline.
+
+#### Custom Vertex Shader
+
+Implemented trigonometric vertex displacement using `sin()` and `cos()` functions to create non-uniform vertex animation over time. The shader receives a `u_Time` uniform that increments each frame, causing each vertex to move differently based on its position coordinates. This creates deformation of the cube geometry.
+
+#### Custom Fragment Shader with 3D Perlin Noise
+
+Developed a complete 3D Perlin noise implementation including:
+
+- Hash function for pseudo-random gradient generation
+- 3D gradient vector computation
+- Trilinear interpolation with smooth step functions
+- Fractional Brownian Motion (FBM) using multiple octaves
+- Dynamic color generation based on noise values
+- Integration with Lambert lighting model
+
+#### Interactive GUI Controls
+
+Extended the existing dat.GUI interface with a color picker that controls the `u_Color` uniform passed to the fragment shader. Color changes are applied in real-time and blended with the procedural noise-generated colors.
+
+#### Animation System
+
+Implemented time-based animation by:
+
+- Tracking elapsed time in the main render loop
+- Converting milliseconds to seconds for shader compatibility
+- Passing time as a uniform to both vertex and fragment shaders
+- Synchronizing geometric deformation with color animation
+
+### Technical Implementation Details
+
+#### Dual-Shader Noise Implementation
+
+Both vertex and fragment shaders implement identical 3D Perlin noise functions, enabling coordinated geometric and color effects. This creates visual coherence between shape deformation and surface appearance.
+
+#### Shader Program Integration
+
+Modified the existing shader loading system to support custom vertex and fragment shaders (`custom-vert.glsl` and `custom-frag.glsl`). Extended the `ShaderProgram` class to handle the `u_Time` uniform binding and updates.
+
+#### 3D Perlin Noise Algorithm
+
+The fragment shader implements gradient-based Perlin noise with proper 3D interpolation:
+
+glsl
+
+```glsl
+float perlinNoise3D(vec3 p) {
+    // Floor and fractional components
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+
+    // Smooth interpolation curves
+    vec3 u = f * f * (3.0 - 2.0 * f);
+
+    // Eight corner gradients and dot products
+    // Trilinear interpolation of results
+}
+```
+
+#### Vertex Animation
+
+The vertex shader applies position-dependent trigonometric displacement:
+
+glsl
+
+```glsl
+vec3 displacement = vs_Nor.xyz * sin(u_Time + vs_Pos.x * 2.0) * 0.3;
+displacement += vs_Pos.xyz * cos(u_Time * 0.8 + vs_Pos.y * 2.0) * 0.1;
+modelposition.xyz += displacement;
+```
+
+#### Rendering Pipeline
+
+Integrated the custom shaders into the existing OpenGL rendering system with matrix transformations, lighting calculations, and depth testing. The cube renders with both geometric animation and procedural coloring.
+
+
+
+
+
+
+
+
+
+
+
+
+
 <p align="center">
   <img width="360" height="360" src="https://user-images.githubusercontent.com/1758825/132532354-e3a45402-e484-499e-bfa7-2d73b9f2c946.png">
 </p>
 <p align="center">(source: Ken Perlin)</p>
 
 ## Objective
+
 - Check that the tools and build configuration we will be using for the class works.
 - Start learning Typescript and WebGL2
 - Practice implementing noise
 
 ## Forking the Code
+
 Rather than cloning the homework repository, please __fork__ the code into your own repository using the `Fork` button in the upper-right hand corner of the Github UI. This will enable you to have your own personal repository copy of the code, and let you make a live demo (described later in this document).
 
 ## Running the Code
@@ -20,20 +120,23 @@ Rather than cloning the homework repository, please __fork__ the code into your 
 2. Using a command terminal, run `npm install` in the root directory of your project. This will download all of those dependencies.
 
 3. Do either of the following (but we highly recommend the first one for reasons we will explain later).
-
+   
     a. Run `npm start` and then go to `localhost:5660` in your web browser
-
+   
     b. Run `npm run build` and then go open `dist/index.html` in your web browser
 
 ## Module Bundling
+
 One of the most important dependencies of our projects is [Webpack](https://webpack.js.org/concepts/). Webpack is a module bundler which allows us to write code in separate files and use `import`s and `export`s to load classes and functions for other files. It also allows us to preprocess code before compiling to a single file. We will be using [Typescript](https://www.typescriptlang.org/docs/home.html) for this course which is Javascript augmented with type annotations. Webpack will convert Typescript files to Javascript files on compilation and in doing so will also check for proper type-safety and usage. Read more about Javascript modules in the resources section below.
 
 ## Developing Your Code
+
 All of the JavaScript code is living inside the `src` directory. The main file that gets executed when you load the page as you may have guessed is `main.ts`. Here, you can make any changes you want, import functions from other files, etc. The reason that we highly suggest you build your project with `npm start` is that doing so will start a process that watches for any changes you make to your code. If it detects anything, it'll automagically rebuild your project and then refresh your browser window for you. Wow. That's cool. If you do it the other way, you'll need to run `npm build` and then refresh your page every time you want to test something.
 
 We would suggest editing your project with Visual Studio Code https://code.visualstudio.com/. Microsoft develops it and Microsoft also develops Typescript so all of the features work nicely together. Sublime Text and installing the Typescript plugins should probably work as well.
 
 ## Assignment Details
+
 1. Take some time to go through the existing codebase so you can get an understanding of syntax and how the code is architected. Much of the code is designed to mirror the class structures used in CIS 460's OpenGL assignments, so it should hopefully be somewhat familiar.
 2. Take a look at the resources linked in the section below. Definitely read about Javascript modules and Typescript. The other links provide documentation for classes used in the code.
 3. Add a `Cube` class that inherits from `Drawable` and at the very least implement a constructor and its `create` function. Then, add a `Cube` instance to the scene to be rendered.
@@ -43,16 +146,17 @@ We would suggest editing your project with Visual Studio Code https://code.visua
 7. Feel free to update any of the files when writing your code. The implementation of the `OpenGLRenderer` is currently very simple.
 
 ## Making a Live Demo
+
 When you push changes to the `master` branch of your repository on Github, a Github workflow will run automatically which builds your code and pushes the build to a new branch `gh-pages`. The configuration file which handles this is located at `.github/workflows/build-and-deploy.yml`. If you want to modify this, you can read more about workflows [here](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions).
 
 Once your built code is pushed to `gh-pages`, Github can automatically publish a live site. Configure that by:
 
-  1. Open the Settings tab of your repository in Github.
+1. Open the Settings tab of your repository in Github.
 
-  2. Scroll down to the Pages tab of the Settings (in the table on the left) and choose which branch to make the source for the deployed project. This should be the `gh-pages` branch which is automatically created after the first successful build of the `master` branch.
+2. Scroll down to the Pages tab of the Settings (in the table on the left) and choose which branch to make the source for the deployed project. This should be the `gh-pages` branch which is automatically created after the first successful build of the `master` branch.
 
-  3. Done! Now, any new commits on the `master` branch will be built and pushed to `gh-pages`. The project should be visible at http://username.github.io/repo-name.
- 
+3. Done! Now, any new commits on the `master` branch will be built and pushed to `gh-pages`. The project should be visible at http://username.github.io/repo-name.
+    
 
 To check if everything is on the right track:
 
@@ -61,12 +165,14 @@ To check if everything is on the right track:
 2. In the settings tab of the repo, under Pages, make sure it says your site is published at some url.
 
 ## Submission
+
 1. Create a pull request to this repository with your completed code.
 2. Update README.md to contain a solid description of your project with a screenshot of some visuals, and a link to your live demo.
 3. Submit the link to your pull request on Canvas, and add a comment to your submission with a hyperlink to your live demo.
 4. Include a link to your live site.
 
 ## Resources
+
 - Javascript modules https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import
 - Typescript https://www.typescriptlang.org/docs/home.html
 - dat.gui https://workshop.chromeexperiments.com/examples/gui/
