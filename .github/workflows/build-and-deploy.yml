@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "16.x"
+          node-version: "14.x"
 
       - uses: actions/cache@v4
         with:
@@ -25,7 +25,6 @@ jobs:
         run: |
           npm ci
           export NODE_ENV=production
-          export NODE_OPTIONS=--openssl-legacy-provider
           npm run build
           touch dist/.nojekyll
           
